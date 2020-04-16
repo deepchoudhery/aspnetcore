@@ -191,9 +191,9 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(line));
 
   module.printErr = line => {
-    // If anything writes to stderr, treat it as a critical exception. The underlying runtime
-    // writes to stderr if a truly critical problem occurs outside .NET code. Note that .NET
-    // unhandled exceptions are sent to the JS side via a different code path (see WebAssemblyConsoleLogger.cs).
+    // If anything writes to stderr, treat it as a critical exception. The underlying runtime writes
+    // to stderr if a truly critical problem occurs outside .NET code. Note that .NET unhandled
+    // exceptions also reach this, but via a different code path - see dotNetCriticalError below.
     console.error(line);
     showErrorNotification();
   };
@@ -254,8 +254,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
     window['Blazor']._internal.dotNetCriticalError = (message: System_String) => {
-      console.error(BINDING.conv_string(message));
-      showErrorNotification();
+      module.printErr(BINDING.conv_string(message) || '(null)');
     };
 
     // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application

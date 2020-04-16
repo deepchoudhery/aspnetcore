@@ -191,6 +191,9 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.print = line => (suppressMessages.indexOf(line) < 0 && console.log(line));
 
   module.printErr = line => {
+    // If anything writes to stderr, treat it as a critical exception. The underlying runtime
+    // writes to stderr if a truly critical problem occurs outside .NET code. Note that .NET
+    // unhandled exceptions are sent to the JS side via a different code path (see WebAssemblyConsoleLogger.cs).
     console.error(line);
     showErrorNotification();
   };

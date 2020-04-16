@@ -11,6 +11,7 @@ import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { showErrorNotification } from './BootErrors';
 
 let started = false;
 
@@ -28,6 +29,10 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   window['Blazor'].platform = platform;
   window['Blazor']._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
     renderBatch(browserRendererId, new SharedMemoryRenderBatch(batchAddress));
+  };
+  window['Blazor']._internal.dotNetCriticalError = (message: string) => {
+    console.error(message);
+    showErrorNotification();
   };
 
   // Configure navigation via JS Interop

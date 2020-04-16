@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var initialResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));            
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js?customizedbootresource=true")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
 
             // On subsequent loads, we skip the items referenced from blazor.boot.json
@@ -57,11 +58,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
+            Assert.Empty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
+            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js?customizedbootresource=true")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/20154")]
+        [Fact]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
@@ -137,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private IReadOnlyCollection<string> GetAndClearRequestedPaths()
         {
-            var requestLog = _serverFixture.Host.Services.GetRequiredService<RequestLog>();
+            var requestLog = _serverFixture.Host.Services.GetRequiredService<BootResourceRequestLog>();
             var result = requestLog.RequestPaths.ToList();
             requestLog.Clear();
             return result;

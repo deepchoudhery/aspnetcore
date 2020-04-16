@@ -200,12 +200,13 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
   // Begin loading the .dll/.pdb/.wasm files, but don't block here. Let other loading processes run in parallel.
   const dotnetWasmResourceName = 'dotnet.wasm';
-  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`);
-  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/_bin/${filename}`);
+  const assembliesBeingLoaded = resourceLoader.loadResources(resources.assembly, filename => `_framework/_bin/${filename}`, 'assembly');
+  const pdbsBeingLoaded = resourceLoader.loadResources(resources.pdb || {}, filename => `_framework/_bin/${filename}`, 'pdb');
   const wasmBeingLoaded = resourceLoader.loadResource(
     /* name */ dotnetWasmResourceName,
     /* url */  `_framework/wasm/${dotnetWasmResourceName}`,
-    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName]);
+    /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
+    /* type */ 'dotnetwasm');
 
   const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
   let timeZoneResource: LoadingResource | undefined;
@@ -213,7 +214,8 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     timeZoneResource = resourceLoader.loadResource(
       dotnetTimeZoneResourceName,
       `_framework/wasm/${dotnetTimeZoneResourceName}`,
-      resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName]);
+      resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
+      'timezonedata');
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
@@ -257,7 +259,7 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       if (satelliteResources) {
         const resourcePromises = Promise.all(culturesToLoad
             .filter(culture => satelliteResources.hasOwnProperty(culture))
-            .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/_bin/${fileName}`))
+            .map(culture => resourceLoader.loadResources(satelliteResources[culture], fileName => `_framework/_bin/${fileName}`, 'assembly'))
             .reduce((previous, next) => previous.concat(next), new Array<LoadingResource>())
             .map(async resource => (await resource.response).arrayBuffer()));
 

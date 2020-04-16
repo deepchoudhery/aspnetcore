@@ -8,10 +8,10 @@ export interface WebAssemblyStartOptions {
    * @param integrity The integrity string representing the expected content in the response.
    * @returns A URI string or a Request instance to override the loading process, or null/undefined to allow the default loading behavior.
    */
-  loadBootResource(type: BootResourceType, name: string, defaultUri: string, integrity: string) : string | Request | null | undefined;
+  loadBootResource(type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) : string | Request | null | undefined;
 }
 
 // This type doesn't have to align with anything in BootConfig.
 // Instead, this represents the public API through which certain aspects
 // of boot resource loading can be customized.
-type BootResourceType = 'assembly' | 'pdb' | 'dotnetjs';
+export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs';

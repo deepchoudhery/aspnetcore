@@ -3,6 +3,7 @@ import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
 import { loadTimezoneData } from './TimezoneDataFile';
+import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 
 let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
@@ -138,15 +139,28 @@ function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
   const dotnetJsResourceName = Object
     .keys(resourceLoader.bootConfig.resources.runtime)
     .filter(n => n.startsWith('dotnet.') && n.endsWith('.js'))[0];
+  const dotnetJsContentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
   const scriptElem = document.createElement('script');
   scriptElem.src = `_framework/wasm/${dotnetJsResourceName}`;
   scriptElem.defer = true;
 
   // For consistency with WebAssemblyResourceLoader, we only enforce SRI if caching is allowed
   if (resourceLoader.bootConfig.cacheBootResources) {
-    const contentHash = resourceLoader.bootConfig.resources.runtime[dotnetJsResourceName];
-    scriptElem.integrity = contentHash;
+    scriptElem.integrity = dotnetJsContentHash;
     scriptElem.crossOrigin = 'anonymous';
+  }
+
+  // Allow overriding the URI from which the dotnet.*.js file is loaded
+  if (resourceLoader.startOptions.loadBootResource) {
+    const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
+    const customSrc = resourceLoader.startOptions.loadBootResource(
+      resourceType, dotnetJsResourceName, scriptElem.src, dotnetJsContentHash);
+    if (typeof(customSrc) === 'string') {
+      scriptElem.src = customSrc;
+    } else if (customSrc) {
+      // Since we must load this via a <script> tag, it's only valid to supply a URI (and not a Request, say)
+      throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
+    }
   }
 
   document.body.appendChild(scriptElem);

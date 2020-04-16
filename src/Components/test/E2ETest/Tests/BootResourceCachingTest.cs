@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));            
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js?customizedbootresource=true")));
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
 
             // On subsequent loads, we skip the items referenced from blazor.boot.json
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
             Assert.Empty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
-            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js?customizedbootresource=true")));
+            Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
 

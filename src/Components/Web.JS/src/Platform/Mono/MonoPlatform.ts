@@ -253,6 +253,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     assembliesBeingLoaded.forEach(r => addResourceAsAssembly(r, changeExtension(r.name, '.dll')));
     pdbsBeingLoaded.forEach(r => addResourceAsAssembly(r, r.name));
 
+    window['Blazor']._internal.dotNetCriticalError = (message: System_String) => {
+      console.error(BINDING.conv_string(message));
+      showErrorNotification();
+    };
+
     // Wire-up callbacks for satellite assemblies. Blazor will call these as part of the application
     // startup sequence to load satellite assemblies for the application's culture.
     window['Blazor']._internal.getSatelliteAssemblies = (culturesToLoadDotNetArray: System_Array<System_String>) : System_Object =>  {
